@@ -1,6 +1,8 @@
 import sqlite3
 from sys import exit
 from time import sleep
+import secrets
+import string
 
 # Default admin password
 adminPassword = "12345"
