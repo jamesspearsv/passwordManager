@@ -54,6 +54,7 @@ def main():
         command = input(": ")
         if command == "q":
             db.commit()
+            db.close()
             print("Saving changes...")
             sleep(.5)
             print("Exiting\nThank you!")
@@ -62,11 +63,15 @@ def main():
         elif command == "s":
             search = input("Which service are you looking for: ")
             for row in db.execute("SELECT * FROM passwords WHERE service=?;", (search,)):
-                print(row)
+                    print("--- {row}")
+            pressEnter()
+
         # Lists all entries in database
         elif command == "l":
+            print("--- (Service, Username, Password)")
             for row in db.execute("SELECT * FROM passwords"):
-                print(row)
+                    print(f"--- {row}")
+            pressEnter()
         # Adds entry to database
         elif command == "a":
             service = input("Service: ")
@@ -83,7 +88,7 @@ def main():
             # Adds new entry to database
             db.execute("INSERT INTO passwords (service, userName, password) VALUES (?, ?, ?)", (service.lower(), username, password))
             print("Successfully added entry")
-            sleep(.5)
+            pressEnter()
         
         # Updates specified entry
         elif command == "u":
@@ -99,38 +104,40 @@ def main():
 
             # Updates specified entry
             db.execute("UPDATE passwords SET password=? WHERE service=?;", (newPW, search.lower()))
+            print("Successfully updated!")
+            pressEnter()
 
         # Removes specified entry
         elif command == "r":
             removal = input("Which service do you want to remove:")
-            result = db.execute("DELETE FROM passwords WHERE service=?;", (removal.lower(),))
-            if result == 0:
-                print("Entry not found. Try again.")
+            db.execute("DELETE FROM passwords WHERE service=?;", (removal.lower(),))
+            print("Successfully removed!")
+            pressEnter()
 
         # If user enters invalid command
         else:
             print("Invalid command -- try again")
-            sleep(1)
+            pressEnter()
 
-def preLogin (): # TODO
+def preLogin ():
     admin = "12345"
-    config = ".config.txt"
-    pwd = os.getcwd()
-    print(pwd)
+    config = "config.txt"
     # if credentials config is absent
-    if config not in os.scandir(path=pwd):
-        print("CREDENTIALS FILE NOT FOUND")
+    if config not in os.listdir(path="."):
+        print("CREDENTIALS NOT FOUND")
         sleep(.5)
         with open(config, "w") as file:
             password = input("New user! Create an admin password: ")
             file.write(password)
             admin = password
-            
+            print("Thank you! Don't forget your password.")
+            sleep(.5)
+
     # if credentials config is present
-    if config in os.scandir(path=pwd):
-        with open(config,"r") as file:
-            password = file.read
-            print(password)
+    else:
+        print("CREDENTIALS FOUND")
+        with open(config, "r") as file:
+            password = file.read()
             admin = password
     return admin
 
@@ -144,5 +151,8 @@ def makePassword():
             and sum(c.isdigit() for c in password) >= 3):
             break
     return password
+
+def pressEnter():
+    input("Press Enter to continue...")
 
 main()
