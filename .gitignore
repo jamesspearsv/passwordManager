@@ -4,5 +4,6 @@
 # Database files
 *.db
 
-# TXT files
+# TXT files and Config files
 *.txt
+*.ini

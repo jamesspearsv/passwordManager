@@ -121,7 +121,7 @@ def main():
 
 def preLogin ():
     admin = "12345"
-    config = "config.txt"
+    config = "config.ini"
     # if credentials config is absent
     if config not in os.listdir(path="."):
         print("CREDENTIALS NOT FOUND")
