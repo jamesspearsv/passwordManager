@@ -10,6 +10,6 @@
 
 # Pyinstaller build files
 /build
-/PassMan-v1.0
+/PassMan
 *.spec
 /__pycache__
