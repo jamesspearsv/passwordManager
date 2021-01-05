@@ -60,14 +60,14 @@ def main():
             print("Exiting\nThank you!")
             exit()
         # Searches current database
-        elif command == "s":  # TODO -> Enable error checking for user input
+        elif command == "s":  # TODO -> Enable error checking for user in
             search = input("Which service are you looking for: ")
             count = db.execute("SELECT COUNT(*) FROM passwords WHERE service=?;", (search, ))
             if count == 0:
                 print("Entry not found. Try again")
                 pressEnter()
             else:
-                for row in db.execute("SELECT COUNT(*) FROM passwords WHERE service=?;", (search,)):
+                for row in db.execute("SELECT * FROM passwords WHERE service=?;", (search,)):
                         print("--- {row}")
                 pressEnter()
 
