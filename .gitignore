@@ -7,3 +7,9 @@
 # TXT files and Config files
 *.txt
 *.ini
+
+# Pyinstaller build files
+/build
+/PassMann-v1.0
+*.spec
+/__pycache__
