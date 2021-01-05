@@ -51,7 +51,7 @@ def main():
         print("* r: Remove entry")
         print("*" * 10)
 
-        command = input(": ")
+        command = input(">>> ")
         if command == "q":
             db.commit()
             db.close()
@@ -60,11 +60,16 @@ def main():
             print("Exiting\nThank you!")
             exit()
         # Searches current database
-        elif command == "s":
+        elif command == "s":  # TODO -> Enable error checking for user input
             search = input("Which service are you looking for: ")
-            for row in db.execute("SELECT * FROM passwords WHERE service=?;", (search,)):
-                    print("--- {row}")
-            pressEnter()
+            count = db.execute("SELECT COUNT(*) FROM passwords WHERE service=?;", (search, ))
+            if count == 0:
+                print("Entry not found. Try again")
+                pressEnter()
+            else:
+                for row in db.execute("SELECT COUNT(*) FROM passwords WHERE service=?;", (search,)):
+                        print("--- {row}")
+                pressEnter()
 
         # Lists all entries in database
         elif command == "l":
