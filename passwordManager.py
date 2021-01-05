@@ -11,7 +11,6 @@ def main():
     # Default admin password
     adminPassword = preLogin()
 
-
     # Initial admin login prompt
     login = input("Admin password: ")
     if login == "q":
@@ -29,6 +28,7 @@ def main():
 
     # Connect to database or creates w/ table on on failure
     db = sqlite3.connect("password.db")
+    cursor = db.cursor()
     try:
         db.execute(
             """CREATE TABLE passwords (
@@ -49,39 +49,46 @@ def main():
         print("* a: Add entry")
         print("* u: Update entry")
         print("* r: Remove entry")
+        print("* e: Export database")
         print("*" * 10)
-
         command = input(">>> ")
+
         if command == "q":
             db.commit()
             db.close()
             print("Saving changes...")
             sleep(.5)
             print("Exiting\nThank you!")
+            sleep(.5)
             exit()
+
         # Searches current database
-        elif command == "s":  # TODO -> Enable error checking for user in
+        elif command == "s":
             search = input("Which service are you looking for: ")
-            count = db.execute("SELECT COUNT(*) FROM passwords WHERE service=?;", (search, ))
-            if count == 0:
+            # Checks that user search is in database
+            rows = cursor.execute("SELECT * FROM passwords WHERE service=?;", (search.lower(), )).fetchall()
+            if len(rows) == 0:
                 print("Entry not found. Try again")
                 pressEnter()
             else:
-                for row in db.execute("SELECT * FROM passwords WHERE service=?;", (search,)):
-                        print(f"--- {row}")
+                print(">>> SERVICE, USERNAME, PASSWORD")
+                for i in range(len(rows)):
+                    row = str(rows[i])
+                    print(">>> {}".format(row.strip("()")))
                 pressEnter()
 
         # Lists all entries in database
         elif command == "l":
-            print("--- (Service, Username, Password)")
+            print(">>> SERVICE, USERNAME, PASSWORD")
             for row in db.execute("SELECT * FROM passwords"):
-                    print(f"--- {row}")
+                rowStr = str(row)
+                print(">>> {}".format(rowStr.strip("()")))
             pressEnter()
+
         # Adds entry to database
         elif command == "a":
             service = input("Service: ")
             username = input("Username: ")
-
             # Gives user chance to generate secure password
             secure = input("Would you like to generate a secure password (y | n):")
             if re.search("^y(es)?$", secure, re.IGNORECASE):
@@ -89,7 +96,6 @@ def main():
                 print(f"Your secure password is: {password}")
             elif re.search("^n(o)?$", secure, re.IGNORECASE):
                 password = input("Password: ")
-            
             # Adds new entry to database
             db.execute("INSERT INTO passwords (service, userName, password) VALUES (?, ?, ?)", (service.lower(), username, password))
             print("Successfully added entry")
@@ -98,31 +104,44 @@ def main():
         # Updates specified entry
         elif command == "u":
             search = input("Which service are looking for: ")
-
-            # Gives user chance to generate secure password
-            secure = input("Would you like to generate a secure password (y | n):")
-            if re.search("^y(es)?$", secure, re.IGNORECASE):
-                newPW = makePassword()
-                print(f"Your secure password is: {newPW}")
-            elif re.search("^n(o)?$", secure, re.IGNORECASE):
-                newPW = input("What is your new password: ")
-
-            # Updates specified entry
-            db.execute("UPDATE passwords SET password=? WHERE service=?;", (newPW, search.lower()))
-            print("Successfully updated!")
-            pressEnter()
+            rows = cursor.execute("SELECT * FROM passwords WHERE service=?;", (search.lower(), )).fetchall()
+            if len(rows) == 0:
+                print("Entry not found. Try again.")
+                pressEnter()
+            else: # TODO --> Does not handle multiple entries from same service
+                # Gives user chance to generate secure password
+                secure = input("Would you like to generate a secure password (y | n):")
+                if re.search("^y(es)?$", secure, re.IGNORECASE):
+                    newPW = makePassword()
+                    print(f"Your secure password is: {newPW}")
+                elif re.search("^n(o)?$", secure, re.IGNORECASE):
+                    newPW = input("What is your new password: ")
+                # Updates specified entry
+                db.execute("UPDATE passwords SET password=? WHERE service=?;", (newPW, search.lower()))
+                print("Successfully updated!")
+                pressEnter()
 
         # Removes specified entry
         elif command == "r":
             removal = input("Which service do you want to remove:")
-            db.execute("DELETE FROM passwords WHERE service=?;", (removal.lower(),))
-            print("Successfully removed!")
+            rows = cursor.execute("SELECT * FROM passwords WHERE service=?;", (removal.lower(),)).fetchall()
+            if len(rows) == 0:
+                print("Entry not found. Try again.")
+                pressEnter()
+            else:
+                db.execute("DELETE FROM passwords WHERE service=?;", (removal.lower(),))
+                print("Successfully removed!")
+                pressEnter()
+
+        # TODO --> add export function
+        elif command == "e":
             pressEnter()
 
         # If user enters invalid command
         else:
             print("Invalid command -- try again")
             pressEnter()
+
 
 def preLogin ():
     admin = "12345"
@@ -137,7 +156,6 @@ def preLogin ():
             admin = password
             print("Thank you! Don't forget your password.")
             sleep(.5)
-
     # if credentials config is present
     else:
         print("CREDENTIALS FOUND")
@@ -157,7 +175,9 @@ def makePassword():
             break
     return password
 
+
 def pressEnter():
     input("Press Enter to continue...")
+
 
 main()
