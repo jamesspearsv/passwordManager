@@ -68,7 +68,7 @@ def main():
                 pressEnter()
             else:
                 for row in db.execute("SELECT * FROM passwords WHERE service=?;", (search,)):
-                        print("--- {row}")
+                        print(f"--- {row}")
                 pressEnter()
 
         # Lists all entries in database
